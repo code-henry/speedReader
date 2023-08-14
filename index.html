@@ -33,7 +33,7 @@
         const reader = new FileReader();
         reader.onload = function(event) {
           const content = event.target.result;
-          sentences = content.split(/[、,.。!！?？]/);
+          sentences = content.split(/[、,.，。!！?？]/);
           currentIndex = 0;
           displayCurrentSentence();
         }
