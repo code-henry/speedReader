@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text Reader</title>
+<style>
+  #text-display {
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    min-height: 100px;
+  }
+</style>
+</head>
+<body>
+  <input type="file" id="file-input">
+  <div id="text-display"></div>
+  <button id="prev-button">前へ</button>
+  <button id="next-button">次へ</button>
+
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const textDisplay = document.getElementById('text-display');
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    let sentences = [];
+    let currentIndex = 0;
+    let subIndex = 0;
+
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const content = event.target.result;
+          const punctuationRegex = /[.。!！?？、,，。 　]/;
+          const sentencesTemp = content.split(punctuationRegex);
+          sentences = [];
+
+          const segmenter = new Intl.Segmenter("ja", { granularity: "word" });
+
+          for (const sentence of sentencesTemp) {
+            const segments = segmenter.segment(sentence);
+            let mergedWords = [];
+            let specialCharacter = "";
+            let subSentences = [];
+
+            for (const segment of segments) {
+              const word = segment.segment;
+              if (word.match(/^[!"%')*+\-.,\/:;>?@\\^_`|}~？！。、」』】はがのをにへとで]$/)) {
+                if (specialCharacter !== "") {
+                  mergedWords.push(specialCharacter);
+                  subSentences.push(mergedWords.join(" "));
+                  mergedWords = [];
+                }
+                specialCharacter = word;
+              } else {
+                if (specialCharacter !== "") {
+                  mergedWords.push(specialCharacter);
+                  specialCharacter = "";
+                }
+                mergedWords.push(word);
+              }
+            }
+
+            if (mergedWords.length > 0) {
+              subSentences.push(mergedWords.join(" "));
+            }
+
+            sentences.push(subSentences);
+          }
+
+          currentIndex = 0;
+          subIndex = 0;
+          displayCurrentSentence();
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    function displaySubSentence(subSentence) {
+      textDisplay.textContent = subSentence;
+    }
+
+    function displayCurrentSentence() {
+      const subSentence = sentences[currentIndex];
+      if (subSentence) {
+        displaySubSentence(subSentence[subIndex]);
+      }
+    }
+
+    prevButton.addEventListener('click', () => {
+      if (subIndex > 0) {
+        subIndex--;
+      } else {
+        currentIndex--;
+        if (currentIndex < 0) {
+          currentIndex = sentences.length - 1;
+        }
+        const prevSubSentence = sentences[currentIndex];
+        if (prevSubSentence) {
+          subIndex = prevSubSentence.length - 1;
+        }
+      }
+      displayCurrentSentence();
+    });
+
+    nextButton.addEventListener('click', () => {
+      if (subIndex < sentences[currentIndex].length - 1) {
+        subIndex++;
+      } else {
+        currentIndex++;
+        if (currentIndex >= sentences.length) {
+          currentIndex = 0;
+        }
+        subIndex = 0;
+      }
+      displayCurrentSentence();
+    });
+  </script>
+</body>
+</html>
