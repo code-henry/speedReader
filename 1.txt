@@ -1,0 +1,30 @@
+reader.onload = function(event) {
+  const content = event.target.result;
+  const punctuationRegex = /[.。!！?？、,，。 　]/;
+  const sentencesTemp = content.split(punctuationRegex);
+  sentences = [];
+
+  for (const sentence of sentencesTemp) {
+    const words = sentence.split(/[ 　]/); // スペースで単語に分割
+    const filteredWords = words.filter(word => {
+      // 格助詞の一般的な例（実際の使用に合わせて拡張が必要）
+      const particles = ["の", "に", "へ", "で", "と", "から", "まで"];
+      return particles.includes(word);
+    });
+
+    if (filteredWords.length > 0) {
+      sentences.push(filteredWords.join(" "));
+    }
+  }
+
+  currentIndex = 0;
+  displayCurrentSentence();
+};
+このコード例では、まず文章を句読点で分割し、各文をさらにスペースで単語に分割します。そして、格助詞の一般的な例を用いて、単語が格助詞かどうかを判定しています。ただし、これは非常に単純な例であり、実際にはさまざまなケースに対応するために格助詞のリストを充実させる必要があります。
+
+実際のアプリケーションで正確な判定を行うには、自然言語処理の手法を用いるか、格助詞のリストを充実させるなどの工夫が必要です。
+
+
+
+
+
